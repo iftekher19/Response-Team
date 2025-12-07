@@ -1,4 +1,3 @@
-// src/contexts/AuthProvider.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import AuthContext from "./AuthContext";
 import { initializeApp } from "firebase/app";
@@ -13,19 +12,6 @@ import {
 import { firebaseConfig } from "../firebase/firebase.config";
 import axios from "axios";
 
-/**
- * AuthProvider
- * - Initialize Firebase auth
- * - Listen to Firebase auth state
- * - When logged in, send idToken to backend POST /api/auth/sync to upsert app user & get role/status
- * - Provide login/register/logout helpers for UI to call
- *
- * NOTE:
- * - Backend endpoint: POST ${VITE_API_URL}/api/auth/sync
- *   expects body: { idToken } and returns { user, token? }
- * - Server JWT (if returned) is stored in localStorage as 'appToken' for apiSecure usage.
- *   In production prefer httpOnly cookies.
- */
 
 initializeApp(firebaseConfig);
 const auth = getAuth();
