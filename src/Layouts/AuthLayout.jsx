@@ -1,13 +1,16 @@
 // src/layouts/AuthLayout.jsx
 import React from "react";
 import { Outlet, Link } from "react-router";
+import Navbar from "../Components/layout/Navbar";
 
 export default function AuthLayout() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
 
+      <Navbar />
+
       {/* Top thin navbar with logo (keeps consistent brand) */}
-      <header className="w-full py-4 px-6 bg-white border-b">
+      {/* <header className="w-full py-4 px-6 bg-white border-b">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold">
@@ -21,7 +24,7 @@ export default function AuthLayout() {
             <Link to="/search" className="text-gray-600 hover:text-red-600">Search Donors</Link>
           </nav>
         </div>
-      </header>
+      </header> */}
 
       {/* Main content area */}
       <main className="flex-1 flex items-center justify-center px-4 py-10">

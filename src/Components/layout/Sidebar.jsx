@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router";
 import useAuth from "../../hooks/useAuth";
 import { getAuth, signOut } from "firebase/auth";
 import {
@@ -95,15 +95,14 @@ export default function Sidebar() {
   return (
     <div className="h-full flex flex-col justify-between bg-white">
       <div>
-        {/* Brand */}
         <div className="px-4 py-6 flex items-center gap-3 border-b">
-          <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold">
+          {/* <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold">
             🩸
           </div>
           <div>
             <h3 className="text-lg font-semibold text-red-600">Response Team</h3>
             <p className="text-xs text-gray-500">Blood Donation</p>
-          </div>
+          </div> */}
         </div>
 
         {/* Menu */}

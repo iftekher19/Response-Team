@@ -6,6 +6,13 @@ import RootLayout from "../Layouts/RootLayout";
 import AuthLayout from "../Layouts/AuthLayout";
 import Register from "../Pages/Auth/Register/Register";
 import Login from "../Pages/Auth/Login/Login";
+import DashboardLayout from "../Layouts/DashboardLayout";
+import DashboardHome from "../Pages/Dashboard/DashboardHome";
+import Profile from "../Pages/Dashboard/Profile";
+import MyDonationRequests from "../Pages/Dashboard/MyDonationRequests";
+import CreateDonationRequest from "../Pages/Dashboard/CreateDonationRequest";
+import Funding from "../Pages/Dashboard/Funding";
+import SearchDonors from "../Pages/Search/SearchDonors";
 
 export const router = createBrowserRouter([
   {
@@ -33,5 +40,35 @@ export const router = createBrowserRouter([
         loader: () => fetch('/districts.json').then(res => res.json())
       }
     ]
-  }, 
+  },
+  {
+    path: '/',
+    Component: DashboardLayout,
+    children: [
+      {
+        path: 'dashboard',
+        Component: DashboardHome
+      },
+      {
+        path: 'dashboard/profile',
+        Component: Profile
+      },
+      {
+        path: 'dashboard/my-donation-requests',
+        Component:MyDonationRequests
+      },
+      {
+        path: 'dashboard/create-donation-request',
+        Component:CreateDonationRequest
+      },
+      {
+        path:'dashboard/funds',
+        Component:Funding
+      },
+      {
+        path:'search',
+        Component:SearchDonors
+      }
+    ]
+  },  
 ]);
