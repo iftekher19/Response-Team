@@ -266,7 +266,7 @@ const Home = () => {
                 transition={{ delay: 0.6 }}
               >
                 <Link
-                  to="/register"
+                  to="/Register"
                   className="group relative px-8 py-4 bg-linear-to-r from-red-600 to-rose-600 text-white rounded-xl text-lg font-bold shadow-xl shadow-red-200 hover:shadow-red-300 transition-all duration-300 hover:scale-105 overflow-hidden"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
@@ -731,7 +731,7 @@ const Home = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/register"
+                to="/Register"
                 className="group px-10 py-5 bg-white text-red-600 rounded-2xl text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
               >
                 <FiHeart className="group-hover:animate-pulse" />
