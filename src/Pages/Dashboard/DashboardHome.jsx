@@ -1,4 +1,3 @@
-// src/pages/Dashboard/DashboardHome.jsx
 import React, { useEffect, useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import useAxios from "../../hooks/useAxios";
@@ -14,6 +13,7 @@ const ensureArray = (v) => {
     if (Array.isArray(v.data)) return v.data;
     if (Array.isArray(v.requests)) return v.requests;
     if (Array.isArray(v.results)) return v.results;
+    if (Array.isArray(v.items)) return v.items;
   }
   // otherwise wrap single item
   return [v];
@@ -33,28 +33,24 @@ export default function DashboardHome() {
   const [stats, setStats] = useState({ users: 0, funds: 0, requests: 0 });
   const [recentRequests, setRecentRequests] = useState([]); // always array
   const [loading, setLoading] = useState(true);
+  const [statsError, setStatsError] = useState("");
 
   useEffect(() => {
     let mounted = true;
+
     const fetchStats = async () => {
       setLoading(true);
+      setStatsError("");
       try {
-        // FIX: guard each request and normalize shapes
+        // Stats (admin endpoint) — wrap call in try/catch, don't crash whole flow
         const sRes = await axiosSecure.get("/admin/stats").catch((e) => {
-          console.warn("admin/stats failed", e?.response?.data || e.message || e);
-          return null;
-        });
-
-        const rRes = await axiosSecure.get("/requests/my?limit=3").catch((e) => {
-          console.warn("/requests/my failed", e?.response?.data || e.message || e);
+          console.warn("admin/stats failed", e?.response?.data || e?.message || e);
           return null;
         });
 
         if (!mounted) return;
 
-        // FIX: normalize stats (server might return { data: {...} } or {...})
         if (sRes?.data) {
-          // expected shape: { users, funds, requests } or { data: { ... } }
           const payload = sRes.data && typeof sRes.data === "object" ? sRes.data : {};
           setStats({
             users: payload.users ?? payload.data?.users ?? 0,
@@ -63,33 +59,50 @@ export default function DashboardHome() {
           });
         }
 
-        // FIX: normalize recent requests to always be an array
+        // Recent requests: require user email. If no user/email yet, return empty list.
+        if (!user?.email) {
+          setRecentRequests([]);
+          return;
+        }
+
+        // Use params so query string is correct
+        const rRes = await axiosSecure
+          .get("/requests/my", { params: { email: user.email, limit: 3 } })
+          .catch((e) => {
+            console.warn("/requests/my failed", e?.response?.data || e?.message || e);
+            return null;
+          });
+
+        if (!mounted) return;
+
         if (rRes) {
-          const candidate = rRes.data ?? rRes; // axios returns .data
+          // axios returns { data: { ok: true, data: [...] } } OR { ok:true, data: [...] } etc.
+          // Try multiple shapes
+          let candidate = rRes.data ?? rRes;
+          // If response has shape { ok: true, data: [...] } prefer .data
+          if (candidate && candidate.ok && candidate.data) candidate = candidate.data;
           const arr = ensureArray(candidate);
           setRecentRequests(arr);
         } else {
           setRecentRequests([]);
         }
-
-        // DEBUG (optional) — remove in production
-        // console.log("stats response:", sRes);
-        // console.log("recent requests response:", rRes);
       } catch (err) {
         console.error("DashboardHome fetch error", err);
+        setStatsError("Could not load dashboard data");
       } finally {
         if (mounted) setLoading(false);
       }
     };
+
     fetchStats();
     return () => {
       mounted = false;
     };
-  }, [axiosSecure]);
+  }, [axiosSecure, user?.email]);
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Welcome, {user?.name || user?.email}</h1>
+      <h1 className="text-2xl font-bold mb-4">Welcome, {user?.name || user?.email || "User"}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <StatsCard title="Total Donors" value={stats.users} />
@@ -99,17 +112,31 @@ export default function DashboardHome() {
 
       <section>
         <h2 className="text-xl font-semibold mb-3">Your recent requests</h2>
+
         {loading ? (
           <div>Loading...</div>
+        ) : !user?.email ? (
+          <p className="text-gray-600">Please log in to see your recent requests.</p>
         ) : recentRequests.length ? (
           <div className="space-y-3">
             {recentRequests.map((req) => (
-              <RequestCard key={req._id || req.id || JSON.stringify(req).slice(0, 10)} request={req} showActions />
+              <RequestCard
+                key={req._id || req.id || JSON.stringify(req).slice(0, 10)}
+                request={req}
+                showActions
+              />
             ))}
+            <div className="mt-3">
+              <a href="/dashboard/my-donation-requests" className="btn btn-outline">
+                View my all requests
+              </a>
+            </div>
           </div>
         ) : (
           <p className="text-gray-600">You have no recent donation requests.</p>
         )}
+
+        {statsError && <p className="text-red-600 mt-3">{statsError}</p>}
       </section>
     </div>
   );

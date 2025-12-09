@@ -1,6 +1,7 @@
 // src/pages/Dashboard/MyDonationRequests.jsx
 import React, { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios";
+import useAuth from "../../hooks/useAuth";
 import RequestCard from "../../Components/Request/RequestCard";
 
 // Normalizer: ALWAYS returns an array
@@ -18,28 +19,45 @@ const ensureArray = (v) => {
 
 export default function MyDonationRequests() {
   const axiosSecure = useAxios();
+  const { user, loading: authLoading } = useAuth();
   const [requests, setRequests] = useState([]); // always array
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let mounted = true;
 
     const loadRequests = async () => {
+      // Don't try to fetch until we have a user email
+      if (!user?.email) {
+        // If auth is still loading, wait; otherwise show empty state
+        if (authLoading) return;
+        setRequests([]);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
+      setError("");
+
       try {
-        const res = await axiosSecure.get("/requests/my").catch((e) => {
-          console.warn("GET /requests/my failed:", e?.response?.data || e.message);
-          return null;
+        // Use axios params to include the required email query
+        const res = await axiosSecure.get("/requests/my", {
+          params: { email: user.email, limit: 50 },
         });
 
         if (!mounted) return;
 
-        const raw = res?.data ?? res;  
+        // axios response typical shape: { data: { ok: true, data: [...] } }
+        // We want to normalize to an array of request docs
+        const raw = res?.data ?? res;
         const arr = ensureArray(raw);
 
-        setRequests(arr); // always array
+        setRequests(arr);
       } catch (err) {
         console.error("MyDonationRequests error:", err);
+        const serverMsg = err?.response?.data?.message || err?.message || "Failed to load requests";
+        setError(serverMsg);
         setRequests([]);
       } finally {
         if (mounted) setLoading(false);
@@ -47,8 +65,12 @@ export default function MyDonationRequests() {
     };
 
     loadRequests();
-    return () => { mounted = false; };
-  }, [axiosSecure]);
+
+    // If you want auto-refresh when user changes, include user.email in deps:
+    return () => {
+      mounted = false;
+    };
+  }, [axiosSecure, user?.email, authLoading]);
 
   return (
     <div>
@@ -56,6 +78,8 @@ export default function MyDonationRequests() {
 
       {loading ? (
         <div>Loading...</div>
+      ) : error ? (
+        <div className="text-red-600">Error: {error}</div>
       ) : requests.length ? (
         <div className="space-y-4">
           {requests.map((req) => (
