@@ -1,140 +1,153 @@
 // src/pages/Dashboard/AllRequests.jsx
 import React, { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios";
+import useAuth from "../../hooks/useAuth";
 import RequestCard from "../../Components/Request/RequestCard";
+import { useNavigate } from "react-router";
 
 export default function AllRequests() {
   const axiosSecure = useAxios();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState(""); // "", "pending","inprogress","done","canceled"
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
   const [error, setError] = useState("");
 
-  // Optional filters
-  const [filter, setFilter] = useState({
-    status: "",
-    bloodGroup: "",
-    district: "",
-    upazila: "",
-    requesterEmail: "",
-  });
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        // build params
+        const params = { page, limit };
+        if (statusFilter) params.status = statusFilter;
+        // Admin and volunteer can see all requests; donors should be redirected (permission guard)
+        if (!user) {
+          setRequests([]);
+          return;
+        }
+        // call backend
+        const res = await axiosSecure.get("/donation-requests", { params }).catch((e) => {
+          console.warn("GET /donation-requests failed", e?.response?.data || e?.message || e);
+          return null;
+        });
 
-  const fetchRequests = async () => {
-    setLoading(true);
-    setError("");
+        if (!mounted) return;
+        let payload = res?.data ?? res;
+        // server returns { ok: true, data: [..] } or just [..]
+        if (payload?.ok && payload.data) payload = payload.data;
+        // normalize
+        const arr = Array.isArray(payload) ? payload : (Array.isArray(payload?.data) ? payload.data : []);
+        setRequests(arr);
+      } catch (err) {
+        console.error("AllRequests load error", err);
+        setError("Failed to load requests");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [axiosSecure, statusFilter, page, limit, user]);
 
+  // actions
+  const changeStatus = async (id, newStatus) => {
     try {
-      const res = await axiosSecure.get("/donation-requests", {
-        params: {
-          status: filter.status || undefined,
-          bloodGroup: filter.bloodGroup || undefined,
-          district: filter.district || undefined,
-          upazila: filter.upazila || undefined,
-          requesterEmail: filter.requesterEmail || undefined,
-          limit: 200,
-        },
-      });
-
-      setRequests(Array.isArray(res.data?.data) ? res.data.data : []);
+      await axiosSecure.patch(`/donation-requests/${id}`, { status: newStatus });
+      setRequests((p) => p.map(r => (r._id === id ? { ...r, status: newStatus } : r)));
     } catch (err) {
-      console.error("Failed to load requests", err);
-      setError(err?.response?.data?.message || "Failed to load requests");
-      setRequests([]);
-    } finally {
-      setLoading(false);
+      console.error("changeStatus err", err);
+      alert("Could not change status");
     }
   };
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+  const deleteRequest = async (id) => {
+    if (!confirm("Delete this request?")) return;
+    try {
+      await axiosSecure.delete(`/donation-requests/${id}`);
+      setRequests((p) => p.filter(r => r._id !== id));
+    } catch (err) {
+      console.error("deleteRequest err", err);
+      alert("Could not delete request");
+    }
+  };
 
-  const handleFilterChange = (e) =>
-    setFilter({ ...filter, [e.target.name]: e.target.value });
-
-  const applyFilters = () => fetchRequests();
+  // permission guard (only admins & volunteers should use this page)
+  if (!user) return <div>Please log in.</div>;
+  if (!["admin","volunteer"].includes(user.role)) {
+    return <div className="text-gray-600">You do not have permission to view all requests.</div>;
+  }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">All Donation Requests</h1>
+    <div>
+      <h1 className="text-2xl font-semibold mb-4">All Donation Requests</h1>
 
-      {/* ---------- Filters UI ---------- */}
-      <div className="bg-white p-4 rounded shadow grid md:grid-cols-4 gap-4">
-        <select
-          name="status"
-          value={filter.status}
-          onChange={handleFilterChange}
-          className="select select-bordered w-full"
-        >
-          <option value="">Status</option>
+      <div className="mb-4 flex items-center gap-3">
+        <select className="select select-bordered" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <option value="">All statuses</option>
           <option value="pending">Pending</option>
           <option value="inprogress">In Progress</option>
           <option value="done">Done</option>
           <option value="canceled">Canceled</option>
         </select>
 
-        <select
-          name="bloodGroup"
-          value={filter.bloodGroup}
-          onChange={handleFilterChange}
-          className="select select-bordered w-full"
-        >
-          <option value="">Blood Group</option>
-          {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bg) => (
-            <option key={bg} value={bg}>{bg}</option>
-          ))}
-        </select>
-
-        <input
-          name="district"
-          value={filter.district}
-          onChange={handleFilterChange}
-          className="input input-bordered w-full"
-          placeholder="District"
-        />
-
-        <input
-          name="upazila"
-          value={filter.upazila}
-          onChange={handleFilterChange}
-          className="input input-bordered w-full"
-          placeholder="Upazila"
-        />
-
-        <input
-          name="requesterEmail"
-          value={filter.requesterEmail}
-          onChange={handleFilterChange}
-          className="input input-bordered w-full md:col-span-2"
-          placeholder="Requester Email"
-        />
-
-        <button
-          className="btn bg-blue-600 text-white md:col-span-2"
-          onClick={applyFilters}
-        >
-          Apply Filters
-        </button>
+        <button className="btn btn-ghost" onClick={() => { setStatusFilter(""); setPage(1); }}>Reset</button>
       </div>
 
-      {/* ---------- Results ---------- */}
       {loading ? (
-        <div>Loading...</div>
+        <div>Loading requests...</div>
       ) : error ? (
         <div className="text-red-600">{error}</div>
       ) : requests.length ? (
-        <div className="space-y-4">
-          {requests.map((req) => (
-            <RequestCard
-              key={req._id}
-              request={req}
-              showActions={false} // change to true if admin wants actions
-            />
+        <div className="space-y-3">
+          {requests.map(r => (
+            <div key={r._id || r.id} className="bg-white p-3 rounded shadow">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="font-semibold">{r.recipientName} <span className="text-sm text-gray-500">({r.bloodGroup})</span></h3>
+                  <p className="text-sm text-gray-600">{r.recipientDistrict} • {r.recipientUpazila}</p>
+                  <p className="text-sm mt-1">{r.requestMessage?.slice(0, 200)}</p>
+                </div>
+
+                <div className="text-right ml-4">
+                  <p className="text-sm mb-2">{r.donationDate} {r.donationTime}</p>
+                  <p className="px-2 py-1 rounded text-sm bg-gray-100">{r.status}</p>
+                </div>
+              </div>
+
+              <div className="mt-3 flex gap-2">
+                {/* Admin can mark done/cancel from inprogress */}
+                {r.status === "inprogress" && (
+                  <>
+                    <button className="btn btn-sm bg-green-600 text-white" onClick={() => changeStatus(r._id, "done")}>Mark Done</button>
+                    <button className="btn btn-sm" onClick={() => changeStatus(r._id, "canceled")}>Cancel</button>
+                  </>
+                )}
+
+                {/* Edit / View */}
+                <button className="btn btn-sm btn-ghost" onClick={() => navigate(`/donation-requests/${r._id}`)}>View</button>
+                <button className="btn btn-sm btn-ghost" onClick={() => navigate(`/dashboard/create-donation-request?edit=${r._id}`)}>Edit</button>
+
+                {/* Delete */}
+                <button className="btn btn-sm btn-outline text-red-600" onClick={() => deleteRequest(r._id)}>Delete</button>
+              </div>
+            </div>
           ))}
         </div>
       ) : (
         <p className="text-gray-600">No donation requests found.</p>
       )}
+
+      <div className="mt-4 flex gap-2 items-center">
+        <button className="btn btn-sm" onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1}>Prev</button>
+        <span>Page {page}</span>
+        <button className="btn btn-sm" onClick={() => setPage(p => p+1)}>Next</button>
+      </div>
     </div>
   );
 }

@@ -75,7 +75,7 @@ export default function Sidebar() {
   // Admin-only links
   const adminLinks = [
     {
-      to: "/dashboard/all-users",
+      to: "ALLUsers",
       label: "All Users",
       icon: <FaUsers className="text-lg" />,
     },

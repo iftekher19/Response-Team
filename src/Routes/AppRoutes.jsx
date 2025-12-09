@@ -15,6 +15,7 @@ import Funding from "../Pages/Dashboard/Funding";
 import SearchDonors from "../Pages/Search/SearchDonors";
 import AllRequests from "../Pages/DonationRequests/AllRequests";
 import RequestDetails from "../Pages/DonationRequests/RequestDetails";
+import AllUsers from "../Pages/Dashboard/AllUsers";
 
 export const router = createBrowserRouter([
   {
@@ -77,7 +78,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "donation-requests/:id",
-        element: <RequestDetails />
+        element: <RequestDetails/>
+      },
+      {
+        path:"AllUsers",
+        Component:AllUsers
       }
     ]
   },  
