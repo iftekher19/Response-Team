@@ -29,8 +29,17 @@ const ContactButtons = ({ email, name }) => {
 
   return (
     <div className="flex gap-2">
-      <a href={`mailto:${email}?subject=Blood%20Donation%20Request&body=Hi%20${encodeURIComponent(name)}`} className="btn btn-sm bg-red-600 text-white">Email</a>
-      <button onClick={copyEmail} className="btn btn-sm btn-ghost">Copy</button>
+      <a
+        href={`mailto:${email}?subject=Blood%20Donation%20Request&body=Hi%20${encodeURIComponent(
+          name
+        )}`}
+        className="btn btn-sm bg-red-600 text-white"
+      >
+        Email
+      </a>
+      <button onClick={copyEmail} className="btn btn-sm btn-ghost">
+        Copy
+      </button>
     </div>
   );
 };
@@ -55,6 +64,9 @@ export default function SearchDonors() {
   // pagination
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 6;
+
+  // whether a search has been performed (prevents "no results" before first search)
+  const [hasSearched, setHasSearched] = useState(false);
 
   const axiosSecure = useAxios();
 
@@ -96,10 +108,17 @@ export default function SearchDonors() {
       return;
     }
     // districts file uses .id and .name
-    const found = districts.find((d) => d.name === district || d.bn_name === district || String(d.id) === String(district));
+    const found = districts.find(
+      (d) => d.name === district || d.bn_name === district || String(d.id) === String(district)
+    );
     const districtId = found?.id || found?.district_id || null;
 
-    const filtered = allUpazilas.filter((u) => String(u.district_id) === String(districtId) || u.district_name === district || u.district === district);
+    const filtered = allUpazilas.filter(
+      (u) =>
+        String(u.district_id) === String(districtId) ||
+        u.district_name === district ||
+        u.district === district
+    );
     setUpazilas(filtered);
     setUpazila(""); // reset upazila selection on district change
   }, [district, districts, allUpazilas]);
@@ -110,6 +129,7 @@ export default function SearchDonors() {
     setError("");
     setResults([]);
     setPage(1);
+    setHasSearched(true);
 
     const q = {
       bloodGroup: opts.bloodGroup ?? bloodGroup,
@@ -118,27 +138,33 @@ export default function SearchDonors() {
     };
 
     try {
-      // MODIFY: change endpoint if your backend uses another route.
-      // Example request: GET /users/search?bloodGroup=A%2B&district=Dhaka&upazila=Savar
-      const params = new URLSearchParams();
-      if (q.bloodGroup) params.append("bloodGroup", q.bloodGroup);
-      if (q.district) params.append("district", q.district);
-      if (q.upazila) params.append("upazila", q.upazila);
+      // Use the server route /search-donors (server.js provides this)
+      const params = {};
+      if (q.bloodGroup) params.bloodGroup = q.bloodGroup;
+      if (q.district) params.district = q.district;
+      if (q.upazila) params.upazila = q.upazila;
 
-      // If backend not ready, you can build a local fallback: fetch('/mock/donors.json')
-      const res = await axiosSecure.get(`/users/search?${params.toString()}`).catch((e) => {
-        console.warn("Search API failed:", e?.response?.data || e.message || e);
-        // Try fallback to /donors.json in public (if you keep a mock list)
-        try {
-          return fetch("/donors.json").then((r) => r.ok ? r.json() : null);
-        } catch {
+      // axiosSecure handles baseURL and authorization headers
+      const res = await axiosSecure
+        .get("/search-donors", { params })
+        .catch(async (e) => {
+          console.warn("Search API failed:", e?.response?.data || e?.message || e);
+          // try fallback to local mock in /public if exists
+          try {
+            const fallback = await fetch("/donors.json");
+            if (fallback.ok) return await fallback.json();
+          } catch (err) {
+            /* ignore */
+          }
           return null;
-        }
-      });
+        });
 
       // normalize response into array
-      const raw = res?.data ?? res;
+      let raw = res?.data ?? res;
+      // if server returns { ok:true, data: [...] } use .data
+      if (raw && raw.ok && raw.data) raw = raw.data;
       const arr = ensureArray(raw);
+
       setResults(arr);
       if (!arr.length) {
         setError("No donors found for your query.");
@@ -165,6 +191,7 @@ export default function SearchDonors() {
     setResults([]);
     setError("");
     setPage(1);
+    setHasSearched(false);
   };
 
   return (
@@ -176,33 +203,64 @@ export default function SearchDonors() {
         <div className="grid md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Blood Group</label>
-            <select value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} className="select select-bordered w-full">
+            <select
+              value={bloodGroup}
+              onChange={(e) => setBloodGroup(e.target.value)}
+              className="select select-bordered w-full"
+            >
               <option value="">Any</option>
-              {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
+                <option key={bg} value={bg}>
+                  {bg}
+                </option>
+              ))}
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">District</label>
-            <select value={district} onChange={(e) => setDistrict(e.target.value)} className="select select-bordered w-full">
+            <select
+              value={district}
+              onChange={(e) => setDistrict(e.target.value)}
+              className="select select-bordered w-full"
+            >
               <option value="">Any</option>
-              {districts?.map(d => (
-                <option key={d.id || d.name} value={d.name}>{d.name}</option>
+              {districts?.map((d) => (
+                <option key={d.id || d.name} value={d.name}>
+                  {d.name}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">Upazila</label>
-            <select value={upazila} onChange={(e) => setUpazila(e.target.value)} className="select select-bordered w-full" disabled={!upazilas || upazilas.length === 0}>
+            <select
+              value={upazila}
+              onChange={(e) => setUpazila(e.target.value)}
+              className="select select-bordered w-full"
+              disabled={!upazilas || upazilas.length === 0}
+            >
               <option value="">{upazilas && upazilas.length ? "Any" : "No upazila data"}</option>
-              {upazilas?.map(u => <option key={u.id || u.name} value={u.name}>{u.name}</option>)}
+              {upazilas?.map((u) => (
+                <option key={u.id || u.name} value={u.name}>
+                  {u.name}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="flex items-end gap-2">
-            <button type="button" onClick={() => runSearch()} className="btn bg-red-600 text-white w-full">Search</button>
-            <button type="button" onClick={resetFilters} className="btn btn-ghost w-full">Reset</button>
+            <button
+              type="button"
+              onClick={() => runSearch()}
+              className="btn bg-red-600 text-white w-full"
+            >
+              Search
+            </button>
+            <button type="button" onClick={resetFilters} className="btn btn-ghost w-full">
+              Reset
+            </button>
           </div>
         </div>
       </div>
@@ -213,17 +271,33 @@ export default function SearchDonors() {
 
         {!loading && error && <div className="p-4 bg-yellow-50 border rounded mb-4 text-sm text-yellow-800">{error}</div>}
 
-        {!loading && !error && !results.length && (
-          <div className="p-6 bg-white rounded shadow text-center text-gray-600">No results yet. Try searching donors.</div>
+        {!loading && !error && !results.length && !hasSearched && (
+          <div className="p-6 bg-white rounded shadow text-center text-gray-600">
+            No results yet. Try searching donors.
+          </div>
+        )}
+
+        {!loading && !error && hasSearched && !results.length && (
+          <div className="p-6 bg-white rounded shadow text-center text-gray-600">
+            No donors found for your search.
+          </div>
         )}
 
         {!loading && results.length > 0 && (
           <div className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               {paginated.map((u) => (
-                <div key={u._id || u.email || u.id} className="bg-white p-4 rounded shadow flex items-center gap-4">
+                <div
+                  key={u._id || u.email || u.id}
+                  className="bg-white p-4 rounded shadow flex items-center gap-4"
+                >
                   <img
-                    src={u.avatar || `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%23ef4444'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='24' fill='white'>${encodeURIComponent((u.name||"U").charAt(0).toUpperCase())}</text></svg>`}
+                    src={
+                      u.avatar ||
+                      `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%23ef4444'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='24' fill='white'>${encodeURIComponent(
+                        (u.name || "U").charAt(0).toUpperCase()
+                      )}</text></svg>`
+                    }
                     alt={u.name}
                     className="w-16 h-16 rounded-full object-cover border-2 border-red-600"
                   />
@@ -232,7 +306,9 @@ export default function SearchDonors() {
                       <div>
                         <h3 className="font-semibold">{u.name}</h3>
                         <p className="text-sm text-gray-600">{u.email}</p>
-                        <p className="text-sm text-gray-600">{u.bloodGroup} • {u.district} {u.upazila ? `• ${u.upazila}` : ""}</p>
+                        <p className="text-sm text-gray-600">
+                          {u.bloodGroup} • {u.district} {u.upazila ? `• ${u.upazila}` : ""}
+                        </p>
                       </div>
                       <div className="text-right">
                         <div className="text-sm text-gray-500">{u.status || "active"}</div>
@@ -241,7 +317,6 @@ export default function SearchDonors() {
 
                     <div className="mt-3 flex gap-2">
                       <ContactButtons email={u.email} name={u.name} />
-                      {/* optional: add "View profile" button linking to private profile or details */}
                     </div>
                   </div>
                 </div>
@@ -250,11 +325,26 @@ export default function SearchDonors() {
 
             {/* Pagination controls */}
             <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-gray-600">Showing {Math.min((page-1)*PAGE_SIZE+1, results.length)} - {Math.min(page*PAGE_SIZE, results.length)} of {results.length}</div>
+              <div className="text-sm text-gray-600">
+                Showing {Math.min((page - 1) * PAGE_SIZE + 1, results.length)} -{" "}
+                {Math.min(page * PAGE_SIZE, results.length)} of {results.length}
+              </div>
               <div className="flex items-center gap-2">
-                <button className="btn btn-sm" onClick={() => setPage((p) => Math.max(1, p-1))} disabled={page === 1}>Prev</button>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Prev
+                </button>
                 <div>{page}</div>
-                <button className="btn btn-sm" onClick={() => setPage((p) => (p * PAGE_SIZE < results.length ? p+1 : p))} disabled={page * PAGE_SIZE >= results.length}>Next</button>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => setPage((p) => (p * PAGE_SIZE < results.length ? p + 1 : p))}
+                  disabled={page * PAGE_SIZE >= results.length}
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
