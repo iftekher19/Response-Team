@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios";
 import useAuth from "../../hooks/useAuth";
 import RequestCard from "../../Components/Request/RequestCard";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 export default function AllRequests() {
   const axiosSecure = useAxios();
@@ -78,7 +78,21 @@ export default function AllRequests() {
   };
 
   // permission guard (only admins & volunteers should use this page)
-  if (!user) return <div>Please log in.</div>;
+  if (!user) {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="text-center">
+        <p className="text-gray-500 mb-3">Please sign in to view requests</p>
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-medium shadow-lg shadow-red-200 hover:shadow-red-300 transition-all"
+        >
+          Sign In
+        </Link>
+      </div>
+    </div>
+  );
+}
   if (!["admin","volunteer"].includes(user.role)) {
     return <div className="text-gray-600">You do not have permission to view all requests.</div>;
   }

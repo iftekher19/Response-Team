@@ -12,8 +12,16 @@ export default function AllDonationRequests() {
   const [filter, setFilter] = useState("pending");
   const [loading, setLoading] = useState(true);
 
-  // Determine mode by role
-  const mode = user?.role === "admin" ? "admin" : "volunteer";
+  // Determine mode by role (fallback to "donor" for safety)
+  const mode =
+    user?.role === "admin"
+      ? "admin"
+      : user?.role === "volunteer"
+      ? "volunteer"
+      : "donor";
+
+  // Only admin/volunteer get action buttons on this page
+  const showActions = user?.role === "admin" || user?.role === "volunteer";
 
   useEffect(() => {
     let mounted = true;
@@ -72,9 +80,9 @@ export default function AllDonationRequests() {
             <RequestCard
               key={r._id || r.id}
               request={r}
-              showActions
+              showActions={showActions}
               showDonor
-              mode={mode} // admin or volunteer
+              mode={mode} // "admin" | "volunteer" | "donor"
             />
           ))}
         </div>

@@ -8,6 +8,7 @@ export default function RequestCard({
   showActions = false,
   showDonor = false,
   mode = "donor", // "donor" | "admin" | "volunteer"
+  showView = true, // NEW: control View button separately
 }) {
   const axiosSecure = useAxios();
   const navigate = useNavigate();
@@ -18,14 +19,13 @@ export default function RequestCard({
   const isVolunteer = mode === "volunteer";
   const isDonor = mode === "donor";
 
-  const canChangeStatus = isAdmin || isVolunteer || isDonor; // all can update status
+  const canChangeStatus = isAdmin || isVolunteer || isDonor; // all can update status on own page
   const canEditDelete = isAdmin || isDonor; // volunteers cannot edit/delete
 
   const changeStatus = async (status) => {
     if (!id) return;
     try {
       await axiosSecure.patch(`/requests/${id}/status`, { status });
-      // quick refresh
       window.location.reload();
     } catch (err) {
       console.error("Change status failed", err);
@@ -80,75 +80,80 @@ export default function RequestCard({
             {request.status}
           </p>
 
-          {showDonor && request.donor && (
+          {showDonor && (request.donorName || request.donorEmail) && (
             <div className="mt-2 text-sm">
-              <p>Donor: {request.donor.name}</p>
-              <p>{request.donor.email}</p>
+              <p>Donor: {request.donorName}</p>
+              <p>{request.donorEmail}</p>
             </div>
           )}
         </div>
       </div>
 
-      {showActions && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {/* STATUS CONTROLS */}
-          {canChangeStatus && request.status === "pending" && (
-            <button
-              onClick={() => changeStatus("inprogress")}
-              className="btn btn-sm bg-blue-600 text-white"
-            >
-              Mark In Progress
-            </button>
-          )}
+      {/* ACTION BUTTONS */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {showActions && (
+          <>
+            {/* STATUS CONTROLS */}
+            {canChangeStatus && request.status === "pending" && (
+              <button
+                onClick={() => changeStatus("inprogress")}
+                className="btn btn-sm bg-blue-600 text-white"
+              >
+                Mark In Progress
+              </button>
+            )}
 
-          {canChangeStatus && request.status === "inprogress" && (
-            <>
-              <button
-                onClick={() => changeStatus("done")}
-                className="btn btn-sm bg-green-600 text-white"
-              >
-                Mark Done
-              </button>
-              <button
-                onClick={() => changeStatus("canceled")}
-                className="btn btn-sm bg-gray-300"
-              >
-                Cancel
-              </button>
-            </>
-          )}
+            {canChangeStatus && request.status === "inprogress" && (
+              <>
+                <button
+                  onClick={() => changeStatus("done")}
+                  className="btn btn-sm bg-green-600 text-white"
+                >
+                  Mark Done
+                </button>
+                <button
+                  onClick={() => changeStatus("canceled")}
+                  className="btn btn-sm bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </>
+            )}
 
-          {/* EDIT / DELETE only for donor or admin */}
-          {canEditDelete && (
-            <>
-              <button
-                onClick={() =>
-                  navigate("/dashboard/create-donation-request", {
-                    state: { request },
-                  })
-                }
-                className="btn btn-sm btn-ghost"
-              >
-                Edit
-              </button>
-              <button
-                onClick={deleteRequest}
-                className="btn btn-sm btn-outline text-red-600"
-              >
-                Delete
-              </button>
-            </>
-          )}
+            {/* EDIT / DELETE only for donor or admin */}
+            {canEditDelete && (
+              <>
+                <button
+                  onClick={() =>
+                    navigate("/dashboard/create-donation-request", {
+                      state: { request },
+                    })
+                  }
+                  className="btn btn-sm btn-ghost"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={deleteRequest}
+                  className="btn btn-sm btn-outline text-red-600"
+                >
+                  Delete
+                </button>
+              </>
+            )}
+          </>
+        )}
 
-          {/* VIEW always */}
+        {/* VIEW always (or controlled via showView) */}
+        {showView && (
           <button
             onClick={() => navigate(`/donation-requests/${id}`)}
             className="btn btn-sm"
           >
             View
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -16,10 +16,18 @@ export default function CreateDonationRequest() {
   const editingRequest = location.state?.request || null;
   const isEdit = !!editingRequest;
 
-  const [districts, setDistricts] = useState(loader || []);
+  const [districts, setDistricts] = useState([]);
+  const [allUpazilas, setAllUpazilas] = useState([]);
+  const [upazilas, setUpazilas] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const { register, handleSubmit, reset } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+  } = useForm({
     defaultValues: {
       requesterName: user?.name || "",
       requesterEmail: user?.email || "",
@@ -35,7 +43,46 @@ export default function CreateDonationRequest() {
     },
   });
 
-  // Apply form values when user or editingRequest changes
+  // ---------- DISTRICTS: loader or fallback ----------
+  useEffect(() => {
+    const applyDistricts = (data) => {
+      if (!data) {
+        setDistricts([]);
+        return;
+      }
+      if (Array.isArray(data)) {
+        setDistricts(data);
+      } else if (Array.isArray(data.districts)) {
+        setDistricts(data.districts);
+      } else {
+        const arr = Object.values(data).find((v) => Array.isArray(v));
+        setDistricts(arr || []);
+      }
+    };
+
+    if (loader) {
+      applyDistricts(loader);
+    } else {
+      fetch("/districts.json")
+        .then((r) => r.json())
+        .then((d) => applyDistricts(d))
+        .catch(() => setDistricts([]));
+    }
+  }, [loader]);
+
+  // ---------- UPAZILAS: load master list ----------
+  useEffect(() => {
+    fetch("/upazilas.json")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setAllUpazilas(data);
+        else if (Array.isArray(data.upazilas)) setAllUpazilas(data.upazilas);
+        else setAllUpazilas([]);
+      })
+      .catch(() => setAllUpazilas([]));
+  }, []);
+
+  // ---------- FORM RESET: create vs edit ----------
   useEffect(() => {
     if (isEdit && editingRequest) {
       reset({
@@ -68,22 +115,44 @@ export default function CreateDonationRequest() {
     }
   }, [isEdit, editingRequest, user, reset]);
 
-  // Load districts if not provided through loader
-  useEffect(() => {
-    if (!loader) {
-      fetch("/districts.json")
-        .then((r) => r.json())
-        .then((d) => setDistricts(d?.districts || d || []))
-        .catch(() => {});
-    }
-  }, [loader]);
+  // ---------- UPAZILA FILTERING BASED ON SELECTED DISTRICT ----------
+  const selectedDistrict = watch("recipientDistrict");
 
+  useEffect(() => {
+    if (!selectedDistrict) {
+      setUpazilas([]);
+      setValue("recipientUpazila", "");
+      return;
+    }
+
+    // Find district object in districts.json
+    const found = districts.find(
+      (d) =>
+        d.name === selectedDistrict ||
+        d.bn_name === selectedDistrict ||
+        String(d.id) === String(selectedDistrict)
+    );
+
+    const districtId = found?.id || found?.district_id || null;
+
+    const filtered = allUpazilas.filter(
+      (u) =>
+        String(u.district_id) === String(districtId) ||
+        u.district_name === selectedDistrict ||
+        u.district === selectedDistrict
+    );
+
+    setUpazilas(filtered);
+
+    // If user changed district, clear previous upazila selection
+    setValue("recipientUpazila", "");
+  }, [selectedDistrict, districts, allUpazilas, setValue]);
+
+  // ---------- SUBMIT ----------
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const payload = {
-        ...data,
-      };
+      const payload = { ...data };
 
       // For create, ensure requester info & status set here
       if (!isEdit) {
@@ -95,12 +164,8 @@ export default function CreateDonationRequest() {
       if (isEdit) {
         // EDIT MODE: update existing request
         const id = editingRequest._id || editingRequest.id;
-        // Backend PATCH /requests/:id only allows certain fields
-        // (status, donorName, donorEmail, donationDate, donationTime, requestMessage)
-        // If you also allowed other fields on backend, this payload will update them.
         const res = await axiosSecure.patch(`/requests/${id}`, payload);
         if (res?.data?.ok) {
-          // After admin edit, go back to All Requests, for donor back to My Requests
           if (user?.role === "admin" || user?.role === "volunteer") {
             navigate("/dashboard/all-blood-donation-request");
           } else {
@@ -135,16 +200,15 @@ export default function CreateDonationRequest() {
         onSubmit={handleSubmit(onSubmit)}
         className="bg-white p-6 rounded shadow space-y-4"
       >
-        {/* keep requester hidden (comes from auth / existing request) */}
+        {/* hidden requester (from auth or existing request) */}
         <input {...register("requesterName")} type="hidden" />
         <input {...register("requesterEmail")} type="hidden" />
 
         <div>
           <label className="block mb-1">Recipient Name</label>
           <input
-            {...register("recipientName")}
+            {...register("recipientName", { required: true })}
             className="input input-bordered w-full"
-            required
           />
         </div>
 
@@ -152,7 +216,7 @@ export default function CreateDonationRequest() {
           <div>
             <label className="block mb-1">Recipient District</label>
             <select
-              {...register("recipientDistrict")}
+              {...register("recipientDistrict", { required: true })}
               className="select select-bordered w-full"
             >
               <option value="">Select district</option>
@@ -165,10 +229,22 @@ export default function CreateDonationRequest() {
           </div>
           <div>
             <label className="block mb-1">Recipient Upazila</label>
-            <input
-              {...register("recipientUpazila")}
-              className="input input-bordered w-full"
-            />
+            <select
+              {...register("recipientUpazila", {
+                required: !!(upazilas && upazilas.length),
+              })}
+              className="select select-bordered w-full"
+              disabled={!upazilas || upazilas.length === 0}
+            >
+              <option value="">
+                {upazilas && upazilas.length ? "Select upazila" : "No upazila data"}
+              </option>
+              {upazilas?.map((u) => (
+                <option key={u.id || u.name || u} value={u.name || u}>
+                  {u.name || u}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -192,7 +268,7 @@ export default function CreateDonationRequest() {
           <div>
             <label className="block mb-1">Blood Group</label>
             <select
-              {...register("bloodGroup")}
+              {...register("bloodGroup", { required: true })}
               className="select select-bordered w-full"
             >
               <option value="">Select</option>

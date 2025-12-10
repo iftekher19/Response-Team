@@ -42,7 +42,7 @@ export default function Navbar() {
 
   const navLinks = (
     <>
-      <NavLink to="/donation-requests" className={navLinkClass}>
+      <NavLink to="donation-requests" className={navLinkClass}>
         <FiHeart className="text-lg" />
         <span>Donation Requests</span>
         <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-linear-to-r from-red-500 to-rose-600 group-hover:w-3/4 transition-all duration-300 rounded-full" />
