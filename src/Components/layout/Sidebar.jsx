@@ -56,7 +56,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   ];
 
   const adminLinks = [
-    { to: "/dashboard/all-users", label: "All Users", icon: FiUsers },
+    { to: "AllUsers", label: "All Users", icon: FiUsers },
     { to: "/dashboard/content-management", label: "Content", icon: FiSettings },
   ];
 
@@ -175,7 +175,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             {/* Quick Actions */}
             <SectionTitle>Quick Actions</SectionTitle>
             <NavItem to="/search" label="Search Donors" icon={FiSearch} />
-            <NavItem to="/donation-requests" label="Browse Requests" icon={FiHeart} />
+            <NavItem to="/dashboard/all-blood-donation-request" label="Browse Requests" icon={FiHeart} />
 
             {/* Volunteer/Admin Section */}
             {(user.role === "volunteer" || user.role === "admin") && (

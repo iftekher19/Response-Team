@@ -115,7 +115,7 @@ export default function Login() {
             </div>
 
             {/* Google Login */}
-            <button
+            {/* <button
               onClick={handleGoogleLogin}
               disabled={googleLoading}
               className="w-full flex items-center justify-center gap-3 px-4 py-3.5 bg-white border-2 border-gray-200 rounded-xl font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-all mb-6"
@@ -126,17 +126,17 @@ export default function Login() {
                 <FcGoogle className="text-xl" />
               )}
               Continue with Google
-            </button>
+            </button> */}
 
             {/* Divider */}
-            <div className="relative mb-6">
+            {/* <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center">
                 <span className="px-4 bg-white text-sm text-gray-400">or</span>
               </div>
-            </div>
+            </div> */}
 
             {/* Login Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

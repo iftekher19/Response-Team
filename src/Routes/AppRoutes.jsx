@@ -16,6 +16,7 @@ import SearchDonors from "../Pages/Search/SearchDonors";
 import AllRequests from "../Pages/DonationRequests/AllRequests";
 import RequestDetails from "../Pages/DonationRequests/RequestDetails";
 import AllUsers from "../Pages/Dashboard/AllUsers";
+import AllDonationRequests from "../Pages/Dashboard/AllDonationRequests";
 
 export const router = createBrowserRouter([
   {
@@ -83,6 +84,10 @@ export const router = createBrowserRouter([
       {
         path:"AllUsers",
         Component:AllUsers
+      },
+      {
+        path:"dashboard/all-blood-donation-request",
+        Component: AllDonationRequests
       }
     ]
   },  
