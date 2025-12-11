@@ -1,6 +1,5 @@
 // this is for public routesss
 
-// src/pages/Requests/DonationRequests.jsx (public)
 import React, { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios";
 import RequestCard from "../../Components/Request/RequestCard";

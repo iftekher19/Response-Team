@@ -24,6 +24,7 @@ import RequestDetails from "../Pages/DonationRequests/RequestDetails"
 import PrivateRoute from "../Routes/Guards/PrivateRoute";
 import AdminRoute from "../Routes/Guards/AdminRoute";
 import DonationRequests from "../Pages/Dashboard/DonationRequests";
+import FundingSuccess from "../Pages/Dashboard/FundingSuccess";
 // import VolunteerRoute from "../Guards/VolunteerRoute"; // when you need it
 
 export const router = createBrowserRouter([
@@ -115,8 +116,12 @@ export const router = createBrowserRouter([
           // Funding (any authenticated user)
           // /dashboard/funds
           {
-            path: "funds",
+            path: "funding",
             element: <Funding />,
+          },
+          {
+            path: "funding-success",
+            element: <FundingSuccess />,
           },
 
           // Admin-only routes
