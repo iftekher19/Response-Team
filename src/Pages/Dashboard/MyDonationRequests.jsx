@@ -1,4 +1,3 @@
-// src/pages/Dashboard/MyDonationRequests.jsx
 import React, { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios";
 import useAuth from "../../hooks/useAuth";
@@ -32,7 +31,6 @@ export default function MyDonationRequests() {
       setError("");
       setRequests([]);
 
-      // IMPORTANT: server requires ?email=...
       if (!user?.email) {
         setError("Please login to see your requests.");
         setLoading(false);
@@ -40,13 +38,11 @@ export default function MyDonationRequests() {
       }
 
       try {
-        // Use axios params to attach email query string properly
         const res = await axiosSecure.get("/requests/my", { params: { email: user.email, limit: 50 } });
 
         if (!mounted) return;
 
         // Normalize shapes:
-        // common server shapes: { ok:true, data: [..] } OR { data: [...] } OR [...]
         let payload = res?.data ?? res;
         if (payload && payload.ok && payload.data) payload = payload.data;
 
@@ -55,12 +51,8 @@ export default function MyDonationRequests() {
       } catch (err) {
         console.error("MyDonationRequests error:", err);
 
-        // Friendly error message, with server message if available
         const serverMsg = err?.response?.data?.message || err?.response?.data || err?.message;
         setError(typeof serverMsg === "string" ? serverMsg : JSON.stringify(serverMsg));
-
-        // Helpful console debug — uncomment if you need further details
-        // console.debug("Axios error response:", err?.response);
       } finally {
         if (mounted) setLoading(false);
       }

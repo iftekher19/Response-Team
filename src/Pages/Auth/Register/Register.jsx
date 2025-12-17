@@ -1,4 +1,3 @@
-// src/pages/Auth/Register/Register.jsx
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import useAuth from "../../../hooks/useAuth";
@@ -7,10 +6,9 @@ import { useNavigate, useLoaderData } from "react-router";
 
 const Register = () => {
   const auth = useAuth();
-  // prefer 'register' exported from AuthProvider; support older names if present
   const registerUser = auth?.register || auth?.registerUser;
   const navigate = useNavigate();
-  const districtsData = useLoaderData(); // optional loader
+  const districtsData = useLoaderData(); 
 
   const [districts, setDistricts] = useState([]);
   const [allUpazilas, setAllUpazilas] = useState([]);
@@ -25,13 +23,12 @@ const Register = () => {
     formState: { errors },
   } = useForm();
 
-  // apply districts from loader or from public/districts.json
+  // Load districts from loader data or fallback to /districts.json
   useEffect(() => {
     const applyData = (data) => {
       if (!data) return setDistricts([]);
       if (Array.isArray(data)) return setDistricts(data);
       if (data.districts && Array.isArray(data.districts)) return setDistricts(data.districts);
-      // fallback: try to find an array inside object
       const arr = Object.values(data).find((v) => Array.isArray(v));
       return setDistricts(arr || []);
     };
@@ -87,24 +84,22 @@ const Register = () => {
     setUpazilas(filtered);
   }, [selectedDistrict, districts, allUpazilas]);
 
-  // watch avatar file input and set preview via effect (more reliable with RHF)
+  // watch avatar file input and set preview via effect 
   const watchedAvatar = watch("avatar");
   useEffect(() => {
     if (watchedAvatar && watchedAvatar[0]) {
       const file = watchedAvatar[0];
       const url = URL.createObjectURL(file);
       setPreview(url);
-      // revoke URL on cleanup
       return () => URL.revokeObjectURL(url);
     } else {
       setPreview(null);
     }
   }, [watchedAvatar]);
 
-  // Upload avatar to imgbb (or other image host)
+  // Upload avatar to imgbb 
   const uploadImage = async (file) => {
     if (!file) return "";
-    // note: your env uses VITE_image_host_key (case-sensitive)
     const key = import.meta.env.VITE_image_host_key || import.meta.env.VITE_IMAGE_HOST_KEY || import.meta.env.VITE_IMAGEBB_KEY;
     if (!key) {
       console.warn("Image host key not set (VITE_image_host_key). Skipping image upload.");
@@ -118,7 +113,6 @@ const Register = () => {
       const res = await axios.post(`https://api.imgbb.com/1/upload?key=${key}`, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      // imgbb returns data.data.url
       return res?.data?.data?.url || "";
     } catch (err) {
       console.error("Image upload failed:", err?.response?.data || err.message || err);
@@ -147,7 +141,7 @@ const Register = () => {
         name: data.name,
         email: data.email,
         password: data.password,
-        avatarUrl: avatarUrl || "", // IMPORTANT: provider expects avatarUrl
+        avatarUrl: avatarUrl || "", 
         bloodGroup: data.bloodGroup || "",
         district: data.district || "",
         upazila: data.upazila || "",
@@ -160,13 +154,12 @@ const Register = () => {
         return;
       }
 
-      // Call provider register (creates firebase user, syncs backend)
+      // Call provider register 
       const result = await registerUser(payload);
 
       setLoading(false);
 
       if (result?.ok) {
-        // redirect to dashboard after successful registration
         navigate("/dashboard");
       } else {
         console.error("Registration failed result:", result);

@@ -1,4 +1,3 @@
-// src/Guards/PrivateRoute.jsx
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 import useAuth from "../../hooks/useAuth";
@@ -9,7 +8,6 @@ const PrivateRoute = () => {
 
   // Still checking Firebase/backend
   if (loading) {
-    // You can replace with your own spinner component
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
@@ -29,7 +27,6 @@ const PrivateRoute = () => {
 
   // Blocked user → do not allow any private route
   if (effectiveStatus === "blocked") {
-    // You can redirect to a "blocked" info page if you create one
     return <Navigate to="/" replace />;
   }
 

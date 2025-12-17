@@ -1,4 +1,3 @@
-// src/pages/Dashboard/AllRequests.jsx
 import React, { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios";
 import useAuth from "../../hooks/useAuth";
@@ -12,7 +11,7 @@ export default function AllRequests() {
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState(""); // "", "pending","inprogress","done","canceled"
+  const [statusFilter, setStatusFilter] = useState(""); 
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [error, setError] = useState("");
@@ -23,10 +22,8 @@ export default function AllRequests() {
       setLoading(true);
       setError("");
       try {
-        // build params
         const params = { page, limit };
         if (statusFilter) params.status = statusFilter;
-        // Admin and volunteer can see all requests; donors should be redirected (permission guard)
         if (!user) {
           setRequests([]);
           return;
@@ -39,7 +36,6 @@ export default function AllRequests() {
 
         if (!mounted) return;
         let payload = res?.data ?? res;
-        // server returns { ok: true, data: [..] } or just [..]
         if (payload?.ok && payload.data) payload = payload.data;
         // normalize
         const arr = Array.isArray(payload) ? payload : (Array.isArray(payload?.data) ? payload.data : []);

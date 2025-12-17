@@ -1,4 +1,3 @@
-// src/Routes/AppRoutes.jsx
 import React from "react";
 import { createBrowserRouter } from "react-router";
 
@@ -25,10 +24,11 @@ import PrivateRoute from "../Routes/Guards/PrivateRoute";
 import AdminRoute from "../Routes/Guards/AdminRoute";
 import DonationRequests from "../Pages/Dashboard/DonationRequests";
 import FundingSuccess from "../Pages/Dashboard/FundingSuccess";
-// import VolunteerRoute from "../Guards/VolunteerRoute"; // when you need it
+import ContentManagement from "../Pages/Dashboard/ContentManagement";
+
 
 export const router = createBrowserRouter([
-  // Public site (root layout)
+  // Public routes
   {
     path: "/",
     element: <RootLayout />,
@@ -38,13 +38,11 @@ export const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "search", // "/search"
+        path: "search", 
         element: <SearchDonors />,
         loader: () => fetch("/districts.json"),
       },
       {
-        // public list of all PENDING blood donation requests
-        // assignment route: /donation-requests
         path: "donation-requests",
         element: <DonationRequests />,
       },
@@ -73,7 +71,6 @@ export const router = createBrowserRouter([
     element: <PrivateRoute />,
     children: [
       {
-        // "/donation-requests/:id" – private details
         path: "donation-requests/:id",
         element: <RequestDetails />,
       },
@@ -83,38 +80,31 @@ export const router = createBrowserRouter([
   // Dashboard – all private
   {
     path: "/dashboard",
-    element: <PrivateRoute />, // user must be logged in & active
+    element: <PrivateRoute />, 
     children: [
       {
-        element: <DashboardLayout />, // layout with sidebar
+        element: <DashboardLayout />, 
         children: [
-          // /dashboard
           {
             index: true,
             element: <DashboardHome />,
           },
 
-          // /dashboard/profile
           {
             path: "profile",
             element: <Profile />,
           },
 
-          // Donor features
-          // /dashboard/my-donation-requests
           {
             path: "my-donation-requests",
             element: <MyDonationRequests />,
           },
 
-          // /dashboard/create-donation-request
           {
             path: "create-donation-request",
             element: <CreateDonationRequest />,
           },
 
-          // Funding (any authenticated user)
-          // /dashboard/funds
           {
             path: "funding",
             element: <Funding />,
@@ -123,12 +113,15 @@ export const router = createBrowserRouter([
             path: "funding-success",
             element: <FundingSuccess />,
           },
+          {
+            path: "content-management",
+            element:<ContentManagement/>,
+          },
 
           // Admin-only routes
           {
             element: <AdminRoute />,
             children: [
-              // /dashboard/all-users
               {
                 path: "AllUsers",
                 element: <AllUsers />,
@@ -136,23 +129,11 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // /dashboard/all-blood-donation-request
-          // Admin + Volunteer share this page
-          // Inside <AllDonationRequests /> you will check user.role:
-          // - admin: full CRUD + status
-          // - volunteer: only update status
           {
             path: "all-blood-donation-request",
             element: <AllDonationRequests />,
           },
 
-          // Example if later you add volunteer-only pages:
-          // {
-          //   element: <VolunteerRoute />,
-          //   children: [
-          //     { path: "volunteer-only-page", element: <VolunteerPage /> }
-          //   ]
-          // },
         ],
       },
     ],

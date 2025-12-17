@@ -1,4 +1,3 @@
-// src/Components/Request/RequestCard.jsx
 import React from "react";
 import useAxios from "../../hooks/useAxios";
 import { useNavigate } from "react-router";
@@ -7,8 +6,8 @@ export default function RequestCard({
   request,
   showActions = false,
   showDonor = false,
-  mode = "donor", // "donor" | "admin" | "volunteer"
-  showView = true, // NEW: control View button separately
+  mode = "donor", 
+  showView = true, 
 }) {
   const axiosSecure = useAxios();
   const navigate = useNavigate();
@@ -19,8 +18,8 @@ export default function RequestCard({
   const isVolunteer = mode === "volunteer";
   const isDonor = mode === "donor";
 
-  const canChangeStatus = isAdmin || isVolunteer || isDonor; // all can update status on own page
-  const canEditDelete = isAdmin || isDonor; // volunteers cannot edit/delete
+  const canChangeStatus = isAdmin || isVolunteer || isDonor; 
+  const canEditDelete = isAdmin || isDonor; 
 
   const changeStatus = async (status) => {
     if (!id) return;
@@ -144,7 +143,7 @@ export default function RequestCard({
           </>
         )}
 
-        {/* VIEW always (or controlled via showView) */}
+        {/* VIEW always  */}
         {showView && (
           <button
             onClick={() => navigate(`/donation-requests/${id}`)}

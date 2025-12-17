@@ -1,4 +1,3 @@
-// src/pages/Auth/Login/Login.jsx
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation, Link } from "react-router";
@@ -74,9 +73,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50 to-rose-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-red-50 to-rose-50 flex items-center justify-center p-4">
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(239,68,68,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(239,68,68,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(239,68,68,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(239,68,68,0.03)_1px,transparent_1px)] bg-size:[40px_40px]" />
 
       {/* Decorative Blobs */}
       <div className="absolute top-20 left-20 w-72 h-72 bg-red-200/30 rounded-full blur-3xl" />
@@ -92,13 +91,13 @@ export default function Login() {
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
           {/* Top Gradient Bar */}
-          <div className="h-2 bg-gradient-to-r from-red-500 via-rose-500 to-red-500" />
+          <div className="h-2 bg-linear-to-r from-red-500 via-rose-500 to-red-500" />
 
           <div className="p-8 sm:p-10">
             {/* Logo */}
             <div className="text-center mb-8">
               <Link to="/" className="inline-flex items-center gap-3 group">
-                <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-200 group-hover:shadow-red-300 transition-shadow">
+                <div className="w-14 h-14 bg-linear-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-200 group-hover:shadow-red-300 transition-shadow">
                   <FiDroplet className="text-white text-2xl" />
                 </div>
                 <div className="text-left">

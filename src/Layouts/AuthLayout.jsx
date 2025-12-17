@@ -1,4 +1,3 @@
-// src/layouts/AuthLayout.jsx
 import React from "react";
 import { Outlet, Link } from "react-router";
 import Navbar from "../Components/layout/Navbar";
@@ -48,7 +47,7 @@ export default function AuthLayout() {
 
             <div className="mt-8">
               <img
-                src="https://i.ibb.co/G32Yf31/blood-donation-illustration.png"
+                src="https://i.ibb.co.com/dskybwD2/Pngtree-happy-red-blood-drop-character-20945249.png"
                 alt="blood donation"
                 className="w-full max-w-sm"
               />

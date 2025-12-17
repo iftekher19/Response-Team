@@ -1,15 +1,14 @@
-// src/pages/Dashboard/Funding.jsx
 import React, { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios";
 import useAuth from "../../hooks/useAuth";
 
 export default function Funding() {
-  const axiosSecure = useAxios(); // assumes this axios instance uses baseURL or full backend URL
+  const axiosSecure = useAxios(); 
   const { user } = useAuth();
 
   const [funds, setFunds] = useState([]);
   const [summary, setSummary] = useState({ total: 0, count: 0 });
-  const [amount, setAmount] = useState(""); // major units e.g. 500.00
+  const [amount, setAmount] = useState(""); 
   const [loading, setLoading] = useState(false);
 
   // load existing funds and summary

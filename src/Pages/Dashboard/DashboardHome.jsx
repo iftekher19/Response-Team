@@ -1,4 +1,3 @@
-// src/pages/Dashboard/DashboardHome.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { FiUsers, FiDollarSign, FiHeart, FiPlus, FiArrowRight, FiMapPin, FiClock } from "react-icons/fi";

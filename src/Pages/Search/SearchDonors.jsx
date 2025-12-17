@@ -1,9 +1,7 @@
-// src/pages/Search/SearchDonors.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useLoaderData } from "react-router";
 import useAxios from "../../hooks/useAxios";
 
-// Helper to ensure value is an array
 const ensureArray = (v) => {
   if (!v) return [];
   if (Array.isArray(v)) return v;
@@ -16,7 +14,7 @@ const ensureArray = (v) => {
   return [];
 };
 
-// Small contact button (mailto + copy email)
+// Small contact button 
 const ContactButtons = ({ email, name }) => {
   const copyEmail = async () => {
     try {
@@ -45,7 +43,7 @@ const ContactButtons = ({ email, name }) => {
 };
 
 export default function SearchDonors() {
-  // loader from route may return array or { districts: [...] }
+  // loader from route 
   const loaderData = useLoaderData();
   const [districts, setDistricts] = useState([]);
   const [allUpazilas, setAllUpazilas] = useState([]);
@@ -65,7 +63,6 @@ export default function SearchDonors() {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 6;
 
-  // whether a search has been performed (prevents "no results" before first search)
   const [hasSearched, setHasSearched] = useState(false);
 
   const axiosSecure = useAxios();
@@ -78,7 +75,6 @@ export default function SearchDonors() {
     } else if (loaderData.districts && Array.isArray(loaderData.districts)) {
       setDistricts(loaderData.districts);
     } else {
-      // fallback: if loaderData itself is an object with array in unknown key
       const arr = Object.values(loaderData).find((v) => Array.isArray(v));
       setDistricts(arr || []);
     }
@@ -89,7 +85,6 @@ export default function SearchDonors() {
     fetch("/upazilas.json")
       .then((r) => r.json())
       .then((data) => {
-        // data expected as array, but tolerate { upazilas: [...] }
         if (Array.isArray(data)) setAllUpazilas(data);
         else if (data.upazilas && Array.isArray(data.upazilas)) setAllUpazilas(data.upazilas);
         else setAllUpazilas([]);
@@ -107,7 +102,6 @@ export default function SearchDonors() {
       setUpazila("");
       return;
     }
-    // districts file uses .id and .name
     const found = districts.find(
       (d) => d.name === district || d.bn_name === district || String(d.id) === String(district)
     );
@@ -123,7 +117,7 @@ export default function SearchDonors() {
     setUpazila(""); // reset upazila selection on district change
   }, [district, districts, allUpazilas]);
 
-  // run search (call backend). This function is safe if backend shape differs.
+  // This function is safe if backend shape differs.
   const runSearch = async (opts = {}) => {
     setLoading(true);
     setError("");
@@ -138,7 +132,6 @@ export default function SearchDonors() {
     };
 
     try {
-      // Use the server route /search-donors (server.js provides this)
       const params = {};
       if (q.bloodGroup) params.bloodGroup = q.bloodGroup;
       if (q.district) params.district = q.district;
@@ -149,19 +142,16 @@ export default function SearchDonors() {
         .get("/search-donors", { params })
         .catch(async (e) => {
           console.warn("Search API failed:", e?.response?.data || e?.message || e);
-          // try fallback to local mock in /public if exists
           try {
             const fallback = await fetch("/donors.json");
             if (fallback.ok) return await fallback.json();
           } catch (err) {
-            /* ignore */
           }
           return null;
         });
 
       // normalize response into array
       let raw = res?.data ?? res;
-      // if server returns { ok:true, data: [...] } use .data
       if (raw && raw.ok && raw.data) raw = raw.data;
       const arr = ensureArray(raw);
 

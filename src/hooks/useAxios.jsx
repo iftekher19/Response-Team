@@ -1,4 +1,3 @@
-// src/hooks/useAxios.jsx
 import { useEffect } from "react";
 import axios from "axios";
 import useAuth from "./useAuth";
@@ -6,8 +5,8 @@ import { useNavigate } from "react-router";
 
 // Create Axios instance
 const axiosSecure = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,   // example: "http://localhost:5000"
-  withCredentials: true,                   // allows sending cookies if backend uses them
+  baseURL: import.meta.env.VITE_API_URL,   
+  withCredentials: true,                   
 });
 
 export default function useAxios() {

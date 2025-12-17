@@ -1,4 +1,3 @@
-// src/pages/Dashboard/AllDonationRequests.jsx
 import React, { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios";
 import useAuth from "../../hooks/useAuth";
@@ -12,7 +11,7 @@ export default function AllDonationRequests() {
   const [filter, setFilter] = useState("pending");
   const [loading, setLoading] = useState(true);
 
-  // Determine mode by role (fallback to "donor" for safety)
+  // Determine mode by role
   const mode =
     user?.role === "admin"
       ? "admin"
@@ -29,7 +28,6 @@ export default function AllDonationRequests() {
     const load = async () => {
       setLoading(true);
       try {
-        // backend /requests returns { ok: true, data: [...] }
         const res = await axiosSecure.get("/requests", {
           params: { status: filter },
         });
@@ -82,7 +80,7 @@ export default function AllDonationRequests() {
               request={r}
               showActions={showActions}
               showDonor
-              mode={mode} // "admin" | "volunteer" | "donor"
+              mode={mode} 
             />
           ))}
         </div>

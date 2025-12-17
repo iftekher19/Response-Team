@@ -1,4 +1,3 @@
-// src/pages/Dashboard/Profile.jsx
 import React, { useEffect, useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import useAxios from "../../hooks/useAxios";
@@ -55,9 +54,7 @@ export default function Profile() {
 
       if (backendId) {
         // PATCH /users/:id
-        // Note: server's PATCH returns { ok: true, data: ... } (not necessarily updated doc)
         await axiosSecure.patch(`/users/${backendId}`, payload);
-        // Attempt to fetch fresh user by email (if available) to get latest doc
         if (emailForUpsert) {
           try {
             const fetchRes = await axiosSecure.get("/users", { params: { email: emailForUpsert } });
@@ -95,7 +92,6 @@ export default function Profile() {
           setUser((prev) => ({ ...(prev || {}), ...payload, email: emailForUpsert }));
         }
       } else {
-        // No id and no email — can't save
         throw new Error(
           "No user id or email available to save profile. Make sure you're logged in. Debug: " +
             JSON.stringify({ backendId, emailForUpsert, firebaseEmail: firebaseUser?.email })

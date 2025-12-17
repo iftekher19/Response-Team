@@ -1,4 +1,3 @@
-// src/pages/Dashboard/FundingSuccess.jsx
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import useAxios from "../../hooks/useAxios";
@@ -7,70 +6,85 @@ export default function FundingSuccess() {
   const axiosSecure = useAxios();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [amount, setAmount] = useState(null);
+  const [currency, setCurrency] = useState("usd");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let mounted = true;
+
     if (!sessionId) {
-      setMessage("Missing session id in URL.");
+      setMessage("Invalid payment session.");
       setLoading(false);
       return;
     }
 
-    const reconcile = async () => {
+    const loadDonationInfo = async () => {
       try {
-        // idempotent reconcile: server will insert only if not already recorded
-        const resp = await axiosSecure.get(`/checkout-session?session_id=${encodeURIComponent(sessionId)}`);
-        const data = resp?.data || resp;
+        const res = await axiosSecure.get(
+          `/checkout-session?session_id=${encodeURIComponent(sessionId)}`
+        );
 
         if (!mounted) return;
 
-        if (data.ok) {
-          if (data.recorded) {
-            setMessage("Thank you — your donation was recorded successfully.");
-          } else {
-            setMessage("Donation was already recorded. Thank you!");
-          }
+        if (res.data?.ok && res.data?.donation) {
+          setAmount(res.data.donation.amount);
+          setCurrency(res.data.donation.currency);
+          setMessage("Thank you for your contribution!");
         } else {
-          // server responded but reported problem
-          setMessage("Payment processed but we could not record it automatically. We'll retry.");
+          setMessage("Payment completed successfully.");
         }
       } catch (err) {
         console.error("FundingSuccess error:", err);
-        setMessage("There was a problem verifying your donation. We will reconcile this soon.");
+        setMessage("Payment completed. Thank you for your support!");
       } finally {
         if (mounted) {
           setLoading(false);
-          // navigate back to funding page after short delay so user sees message
           setTimeout(() => {
             navigate("/dashboard/funding", { replace: true });
-          }, 3500);
+          }, 4000);
         }
       }
     };
 
-    reconcile();
+    loadDonationInfo();
     return () => { mounted = false; };
   }, [sessionId, axiosSecure, navigate]);
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Donation status</h1>
-
+    <div className="max-w-xl mx-auto p-6 text-center">
       {loading ? (
-        <div className="text-gray-600">Verifying payment & recording donation... Please wait.</div>
+        <p className="text-gray-600">Finalizing your donation…</p>
       ) : (
-        <div>
-          <div className="p-4 bg-green-50 border border-green-200 rounded mb-4">
-            <div className="text-lg font-medium">{message}</div>
-            <div className="text-sm text-gray-600 mt-2">You will be redirected to the Funding page shortly.</div>
-          </div>
+        <div className="bg-white shadow rounded p-6">
+          <h1 className="text-2xl font-bold text-green-600 mb-3">
+            🎉 Payment Successful
+          </h1>
 
-          <div>
-            <button className="btn" onClick={() => navigate("/dashboard/funding")}>Go to Funding page now</button>
-          </div>
+          <p className="text-lg mb-2">{message}</p>
+
+          {amount !== null && (
+            <p className="text-xl font-semibold mb-4">
+              Donated Amount:{" "}
+              <span className="text-red-600">
+                ৳ {amount.toFixed(2)}
+              </span>
+            </p>
+          )}
+
+          <p className="text-sm text-gray-500 mb-4">
+            We truly appreciate your support. You will be redirected shortly.
+          </p>
+
+          <button
+            className="btn bg-red-600 text-white"
+            onClick={() => navigate("/dashboard/funding")}
+          >
+            Go to Dashboard
+          </button>
         </div>
       )}
     </div>

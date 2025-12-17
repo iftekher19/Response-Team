@@ -1,4 +1,3 @@
-// src/components/Sidebar.jsx
 import React, { useState } from "react";
 import { NavLink, useNavigate, Link } from "react-router";
 import useAuth from "../../hooks/useAuth";
@@ -87,7 +86,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       className={({ isActive }) =>
         `group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
           isActive
-            ? "bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-200"
+            ? "bg-linear-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-200"
             : "text-gray-600 hover:bg-red-50 hover:text-red-600"
         } ${isCollapsed ? "justify-center" : ""}`
       }
@@ -136,7 +135,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             </div>
             {!isCollapsed && (
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Response</h3>
+                <h3 className="text-lg font-bold text-gray-900">Response Team</h3>
                 <p className="text-xs text-gray-500 -mt-0.5">Blood Donation</p>
               </div>
             )}
@@ -175,7 +174,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             {/* Quick Actions */}
             <SectionTitle>Quick Actions</SectionTitle>
             <NavItem to="/search" label="Search Donors" icon={FiSearch} />
-            <NavItem to="/dashboard/all-blood-donation-request" label="Browse Requests" icon={FiHeart} />
+            {/* <NavItem to="/dashboard/all-blood-donation-request" label="Browse Requests" icon={FiHeart} /> */}
 
             {/* Volunteer/Admin Section */}
             {(user.role === "volunteer" || user.role === "admin") && (
@@ -269,7 +268,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             )}
             <button
               onClick={() => navigate("/login")}
-              className={`flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-medium shadow-lg shadow-red-200 hover:shadow-red-300 transition-all ${
+              className={`flex items-center justify-center gap-2 bg-linear-to-r from-red-500 to-rose-500 text-white rounded-xl font-medium shadow-lg shadow-red-200 hover:shadow-red-300 transition-all ${
                 isCollapsed ? "w-10 h-10 p-0" : "w-full py-2.5 px-4"
               }`}
             >

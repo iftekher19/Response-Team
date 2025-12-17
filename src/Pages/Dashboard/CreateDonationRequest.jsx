@@ -1,4 +1,3 @@
-// src/pages/Dashboard/CreateDonationRequest.jsx
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import useAuth from "../../hooks/useAuth";
@@ -9,7 +8,7 @@ export default function CreateDonationRequest() {
   const { user } = useAuth();
   const axiosSecure = useAxios();
   const navigate = useNavigate();
-  const loader = useLoaderData?.(); // optional districts loader
+  const loader = useLoaderData?.(); 
   const location = useLocation();
 
   // If we came from "Edit" button, request object is here
@@ -162,7 +161,6 @@ export default function CreateDonationRequest() {
       }
 
       if (isEdit) {
-        // EDIT MODE: update existing request
         const id = editingRequest._id || editingRequest.id;
         const res = await axiosSecure.patch(`/requests/${id}`, payload);
         if (res?.data?.ok) {
@@ -175,7 +173,6 @@ export default function CreateDonationRequest() {
           alert("Failed to update request");
         }
       } else {
-        // CREATE MODE: create new request
         const res = await axiosSecure.post("/requests", payload);
         if (res?.data?.ok) {
           navigate("/dashboard/my-donation-requests");

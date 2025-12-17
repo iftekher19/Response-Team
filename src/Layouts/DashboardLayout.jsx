@@ -1,7 +1,6 @@
-// src/layouts/DashboardLayout.jsx
 import React, { useState, useCallback } from "react";
 import { Outlet } from "react-router";
-import Sidebar from "../components/layout/Sidebar";
+import Sidebar from "../Components/layout/Sidebar";
 
 export default function DashboardLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -22,12 +21,10 @@ export default function DashboardLayout() {
       {/* Mobile Drawer Overlay */}
       {drawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          {/* Dim background */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setDrawerOpen(false)}
           />
-          {/* Sidebar Drawer */}
           <div className="absolute left-0 top-0 h-full w-64 bg-white shadow-2xl">
             <Sidebar onNavigate={handleNavigateFromSidebar} />
           </div>
@@ -36,7 +33,6 @@ export default function DashboardLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile Menu Button */}
         <div className="lg:hidden p-4 border-b border-gray-200 bg-white">
           <button
             onClick={() => setDrawerOpen(true)}

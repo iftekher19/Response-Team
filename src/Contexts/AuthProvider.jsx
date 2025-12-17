@@ -1,4 +1,3 @@
-// src/Contexts/AuthProvider.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import AuthContext from "./AuthContext";
 import { initializeApp } from "firebase/app";
@@ -16,7 +15,7 @@ import axios from "axios";
 initializeApp(firebaseConfig);
 const auth = getAuth();
 
-// Helper: create an axios instance with baseURL when available
+//  create an axios instance with baseURL 
 const makeApiClient = () => {
   const API = import.meta.env.VITE_API_URL || "";
   const client = axios.create({
@@ -25,7 +24,7 @@ const makeApiClient = () => {
     headers: { "Content-Type": "application/json" },
   });
 
-  // attach appToken if present (non-httpOnly)
+  // attach appToken if present 
   client.interceptors.request.use((cfg) => {
     const token = localStorage.getItem("appToken");
     if (token) cfg.headers["Authorization"] = `Bearer ${token}`;
@@ -36,8 +35,8 @@ const makeApiClient = () => {
 };
 
 export function AuthProvider({ children }) {
-  const [firebaseUser, setFirebaseUser] = useState(null); // raw firebase user
-  const [user, setUser] = useState(null); // application user from backend (role/status)
+  const [firebaseUser, setFirebaseUser] = useState(null); 
+  const [user, setUser] = useState(null); 
   const [loading, setLoading] = useState(true);
 
   const api = makeApiClient();
@@ -57,7 +56,7 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        // Grab profile info from firebase current user (if available)
+        // Grab profile info from firebase current user if available
         const fb = auth.currentUser || firebaseUser;
         const payload = {
           idToken,
@@ -66,31 +65,26 @@ export function AuthProvider({ children }) {
           avatar: fb?.photoURL,
         };
 
-        // POST to /api/auth/sync (server will upsert)
+        // POST to /api/auth/sync 
         const res = await api.post("/api/auth/sync", payload).catch((err) => {
-          // bubble a helpful message but don't throw
           console.warn("POST /api/auth/sync failed:", err?.response?.data || err.message || err);
           return err?.response || null;
         });
 
         const data = res?.data ?? null;
 
-        // If server gave us a user object, trust it
         if (data?.user) {
           setUser(data.user);
         } else if (data?.ok) {
-          // Server accepted upsert. Try to fetch the stored user doc by email.
+          // If server only confirmed upsert, try fetching stored profile by email
           if (payload.email) {
             try {
-              // server GET /users?email=...
               const getRes = await api.get("/users", { params: { email: payload.email } });
-              // accept both { ok:true, data: [...] } and direct array shapes
               const docs = getRes?.data?.data ?? getRes?.data ?? getRes;
               const arr = Array.isArray(docs) ? docs : Array.isArray(docs?.data) ? docs.data : [];
               if (arr && arr.length) {
                 setUser(arr[0]);
               } else {
-                // fallback minimal profile
                 setUser({ email: payload.email, name: payload.name, avatar: payload.avatar });
               }
             } catch (err) {
@@ -108,7 +102,7 @@ export function AuthProvider({ children }) {
         console.error("Auth sync error:", err?.response?.data || err.message || err);
       }
     },
-    [firebaseUser] // depends on firebaseUser reference
+    [firebaseUser] 
   );
 
   // Listen for firebase auth changes
@@ -119,7 +113,7 @@ export function AuthProvider({ children }) {
 
       if (fbUser) {
         try {
-          const idToken = await fbUser.getIdToken(/* forceRefresh */ false);
+          const idToken = await fbUser.getIdToken( false);
           await syncWithBackend(idToken);
         } catch (err) {
           console.error("Failed to get idToken or sync:", err);
@@ -136,11 +130,7 @@ export function AuthProvider({ children }) {
   }, [syncWithBackend]);
 
   /**
-   * register:
-   * - create Firebase user
-   * - update Firebase profile (displayName/photoURL)
-   * - force-refresh idToken and call /api/auth/sync with idToken + profile
-   * - as a safety, also POST /users profile (upsert) if API present
+   * register: Registers a new user with email/password and optional profile info
    */
   const register = async ({ email, password, name, avatarUrl, bloodGroup, district, upazila }) => {
     setLoading(true);
@@ -155,16 +145,13 @@ export function AuthProvider({ children }) {
             photoURL: avatarUrl || undefined,
           });
         } catch (err) {
-          // non-critical
           console.warn("Failed to update firebase profile:", err?.message || err);
         }
       }
 
-      // Force refresh token and sync with backend
       const idToken = await cred.user.getIdToken(true);
       await syncWithBackend(idToken);
-
-      // Best-effort: upsert full profile to /users so backend contains bloodGroup/district/upazila too.
+      // Upsert user profile to backend /users
       try {
         const API = import.meta.env.VITE_API_URL;
         if (API) {
@@ -178,16 +165,13 @@ export function AuthProvider({ children }) {
             role: "donor",
             status: "active",
           };
-          // server POST /users will upsert by email
           await api.post("/users", profile).catch((e) => {
-            // ignore harmless errors (already upserted etc)
             console.warn("POST /users upsert may have failed (ignored):", e?.response?.data || e.message || e);
           });
         } else {
           console.warn("VITE_API_URL not set — skipping POST /users upsert");
         }
       } catch (e) {
-        // ignore
         console.warn("Upsert after register failed (ignored):", e?.message || e);
       }
 

@@ -1,4 +1,3 @@
-// src/pages/Requests/RequestDetails.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import useAxios from "../../hooks/useAxios";
@@ -50,7 +49,6 @@ export default function RequestDetails() {
         if (!mounted) return;
 
         let data = res?.data ?? res;
-        // normalize { ok:true, data:{...} }
         if (data && data.ok && data.data) data = data.data;
 
         setRequest(data || null);
