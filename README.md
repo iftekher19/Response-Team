@@ -198,17 +198,6 @@ and a recruiter-friendly UI.
 <hr/>
 
 
-<hr/>
-
-<h2>🧾 Compliance Notes</h2>
-<ul>
-  <li>Unique UI design (not copied from module examples)</li>
-  <li>All assignment requirements fulfilled</li>
-  <li>Secure configuration and deployment</li>
-</ul>
-
-<hr/>
-
 <h2>👤 Author</h2>
 <p>
 <strong>MD Iftekher Ahmed</strong><br/>
