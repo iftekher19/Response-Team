@@ -10,6 +10,9 @@
   <a href="https://response-team-9bbc2.web.app/" target="_blank">
     https://response-team-9bbc2.web.app/
   </a>
+  Server site:
+  <a href="https://github.com/iftekher19/Response-Team-Server.git" target="_blank">
+    https://github.com/iftekher19/Response-Team-Server.git
 </p>
 
 <hr/>
@@ -48,6 +51,8 @@ and a recruiter-friendly UI.
   <li>SweetAlert2</li>
   <li>Recharts</li>
   <li>Firebase Authentication</li>
+  <li>aos</li>
+  
 </ul>
 
 <h3>Backend</h3>
@@ -187,24 +192,6 @@ and a recruiter-friendly UI.
 
 <hr/>
 
-<h2>📂 Project Structure</h2>
-
-<pre>
-client/
- └── src/
-     ├── components
-     ├── pages
-     ├── routes
-     ├── hooks
-     └── contexts
-
-server/
- ├── routes
- ├── controllers
- ├── middleware
- ├── models
- └── utils
-</pre>
 
 <hr/>
 
