@@ -1,6 +1,23 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@layer base {
+  label {
+    @apply text-gray-700 font-medium;
+  }
+
+  input,
+  select,
+  textarea {
+    @apply text-gray-900;
+  }
+
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    @apply opacity-100 text-gray-700;
+  }
+}
 
 @keyframes slideDown {
   from {

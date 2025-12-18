@@ -180,28 +180,28 @@ const Register = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Name */}
         <div>
-          <label className="block mb-1">Full Name</label>
+          <label className="block mb-1 text-gray-700 font-medium">Full Name</label>
           <input type="text" className="input input-bordered w-full" {...register("name", { required: true })} />
           {errors.name && <p className="text-red-500 text-sm">Name is required</p>}
         </div>
 
         {/* Email */}
         <div>
-          <label className="block mb-1">Email</label>
+          <label className="block mb-1 text-gray-700 font-medium">Email</label>
           <input type="email" className="input input-bordered w-full" {...register("email", { required: true })} />
           {errors.email && <p className="text-red-500 text-sm">Email is required</p>}
         </div>
 
         {/* Password */}
         <div>
-          <label className="block mb-1">Password</label>
+          <label className="block mb-1 text-gray-700 font-medium">Password</label>
           <input type="password" className="input input-bordered w-full" {...register("password", { required: true, minLength: 6 })} />
           {errors.password && <p className="text-red-500 text-sm">Password is required (min 6 chars)</p>}
         </div>
 
         {/* Confirm Password */}
         <div>
-          <label className="block mb-1">Confirm Password</label>
+          <label className="block mb-1 text-gray-700 font-medium">Confirm Password</label>
           <input
             type="password"
             className="input input-bordered w-full"
@@ -215,14 +215,14 @@ const Register = () => {
 
         {/* Avatar */}
         <div>
-          <label className="block mb-1">Avatar (Optional)</label>
+          <label className="block mb-1 text-gray-700 font-medium">Avatar (Optional)</label>
           <input type="file" className="file-input file-input-bordered w-full" {...register("avatar")} />
           {preview && <img src={preview} className="w-20 h-20 rounded-full mt-2 object-cover" alt="avatar preview" />}
         </div>
 
         {/* Blood Group */}
         <div>
-          <label className="block mb-1">Blood Group</label>
+          <label className="block mb-1 text-gray-700 font-medium">Blood Group</label>
           <select className="select select-bordered w-full" {...register("bloodGroup", { required: true })}>
             <option value="">Choose Blood Group</option>
             {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bg) => (
@@ -234,7 +234,7 @@ const Register = () => {
 
         {/* District */}
         <div>
-          <label className="block mb-1">District</label>
+          <label className="block mb-1 text-gray-700 font-medium">District</label>
           <select className="select select-bordered w-full" {...register("district", { required: true })}>
             <option value="">Select District</option>
             {districts?.map((d) => {
@@ -247,7 +247,7 @@ const Register = () => {
 
         {/* Upazila */}
         <div>
-          <label className="block mb-1">Upazila</label>
+          <label className="block mb-1 text-gray-700 font-medium">Upazila</label>
           <select
             className="select select-bordered w-full"
             {...register("upazila", { required: !!(upazilas && upazilas.length) })}
@@ -261,9 +261,9 @@ const Register = () => {
             ))}
           </select>
           {errors.upazila && <p className="text-red-500 text-sm">Select upazila</p>}
-          {(!upazilas || upazilas.length === 0) && (
+          {/* {(!upazilas || upazilas.length === 0) && (
             <p className="text-sm text-gray-500 mt-1">Upazila data loaded from <code>/upazilas.json</code>. If absent, ensure the file contains records.</p>
-          )}
+          )} */}
         </div>
 
         <button type="submit" className="btn bg-red-600 text-white w-full hover:bg-red-700" disabled={loading}>
