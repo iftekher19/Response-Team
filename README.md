@@ -11,7 +11,7 @@
     https://response-team-9bbc2.web.app/
   </a>
 </br>
-</p>
+</p align="center">
   Server site:
   <a href="https://github.com/iftekher19/Response-Team-Server.git" target="_blank">
     https://github.com/iftekher19/Response-Team-Server.git
