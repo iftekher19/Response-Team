@@ -6,16 +6,19 @@
 </p>
 
 <p align="center">
-  🌐 Live Site:
+  🌐 <strong>Live Site:</strong>
   <a href="https://response-team-9bbc2.web.app/" target="_blank">
     https://response-team-9bbc2.web.app/
   </a>
-</br>
-</p align="center">
-  Server site:
+</p>
+
+<p align="center">
+  🖥️ <strong>Server Repository:</strong>
   <a href="https://github.com/iftekher19/Response-Team-Server.git" target="_blank">
     https://github.com/iftekher19/Response-Team-Server.git
+  </a>
 </p>
+
 
 <hr/>
 
